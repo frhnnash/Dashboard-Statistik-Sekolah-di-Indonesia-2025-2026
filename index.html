@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Statistik Sekolah Indonesia 2025/2026</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+function resetProvinsi(){
+
+  // kosongkan select
+  document.getElementById("selectProvinsi").value = "";
+
+  // kosongkan search
+  document.getElementById("searchProvinsi").value = "";
+
+  // kembalikan tampilan awal
+  location.reload("detailprovinsi");
+}
+</script>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ===================== CSS VARIABLES & BASE ===================== */
+    :root {
+      --primary: #e11d78;
+      --primary-light: #fce7f3;
+      --primary-dark: #9d174d;
+      --secondary: #6366f1;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --bg: #f1f5f9;
+      --sidebar-bg: #1e1b4b;
+      --sidebar-accent: #312e81;
+      --card: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    /* ===================== LAYOUT ===================== */
+    .app-wrapper { display: flex; min-height: 100vh; }
+
+    /* ===================== SIDEBAR ===================== */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: var(--sidebar-bg);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      z-index: 100;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--primary), #f472b6);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(225,29,120,0.4);
+    }
+
+    .logo-icon img{
+      width: 50px;
+     height: 50px;
+     object-fit: contain;
+     }
+
+
+    .logo-text { color: white; }
+    .logo-text .brand { font-size: 18px; font-weight: 800; }
+    .logo-text .brand span { color: #f9a8d4; }
+    .logo-text .tagline { font-size: 10px; color: #a5b4fc; margin-top: 2px; line-height: 1.3; }
+
+    .sidebar-nav { padding: 16px 12px; flex: 1; }
+
+    .nav-label {
+      font-size: 10px; font-weight: 700; color: #6366f1;
+      text-transform: uppercase; letter-spacing: 1.2px;
+      padding: 8px 8px 4px;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: 10px;
+      color: #c7d2fe; cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px; font-weight: 500;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
+    .nav-item.active {
+      background: linear-gradient(135deg, var(--primary), #db2777);
+      color: white;
+      box-shadow: 0 4px 12px rgba(225,29,120,0.4);
+    }
+    .nav-item .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    /* Mascot area at bottom of sidebar */
+    .sidebar-mascot {
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .mascot-box {
+      background: var(--sidebar-accent);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    /* SVG Mascot Students */
+    .mascot-svg { width: 100%; max-width: 200px; margin: 0 auto 8px; display: block; }
+
+    .mascot-quote {
+      font-size: 11px; color: #c7d2fe;
+      line-height: 1.5; font-style: italic;
+    }
+
+    .year-badge {
+      margin-top: 12px;
+      background: rgba(225,29,120,0.2);
+      border: 1px solid rgba(225,29,120,0.4);
+      border-radius: 8px;
+      padding: 6px 10px;
+      text-align: center;
+      font-size: 11px; color: #f9a8d4; font-weight: 700;
+    }
+
+    /* ===================== MAIN CONTENT ===================== */
+    .main-content {
+      margin-left: 260px;
+      flex: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===================== TOP HEADER ===================== */
+    .top-header {
+      background: linear-gradient(to right, rgb(0, 0, 0), rgb(0, 100, 128));
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 20px rgba(225,29,120,0.3);
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    .header-title h1 {
+      font-size: 22px; font-weight: 800;
+      color: white; margin: 0; line-height: 1.2;
+    }
+    .header-title p { font-size: 13px; color: #fce7f3; margin: 2px 0 0; }
+
+    .reset-btn{
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+
+  background: #6366f1;
+  color: white;
+
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.reset-btn:hover{
+  background: #4f46e5;
+}
+
+    .tahun-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 6px 14px;
+      color: white; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+      backdrop-filter: blur(8px);
+    }
+
+    .update-badge {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 6px 14px;
+      color: #fce7f3; font-size: 11px;
+    }
+
+    /* ===================== PAGE CONTENT ===================== */
+    .page { display: none; padding: 24px 28px; }
+    .page.active { display: block; }
+
+    /* ===================== KPI CARDS ===================== */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.04);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: fadeInUp 0.5s ease both;
+    }
+    .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+
+    .kpi-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; margin-bottom: 12px;
+    }
+
+    .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+    .kpi-value { font-size: 22px; font-weight: 800; color: var(--text-main); line-height: 1.1; }
+    .kpi-unit { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .kpi-sub { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+    .kpi-trend {
+      font-size: 10px; font-weight: 600; margin-top: 6px;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .trend-up { color: var(--success); }
+    .trend-down { color: var(--danger); }
+
+    /* ===================== SECTION CARDS ===================== */
+    .section-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid rgba(0,0,0,0.04);
+      animation: fadeInUp 0.5s ease both;
+    }
+
+    .section-title {
+      font-size: 15px; font-weight: 700; color: var(--text-main);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .section-title-icon {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+    }
+
+    /* Grid layouts */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+    /* ===================== TOP/BOTTOM TABLES ===================== */
+    .rank-table { width: 100%; border-collapse: collapse; }
+    .rank-table th {
+      font-size: 10px; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 8px 10px; border-bottom: 2px solid #f1f5f9;
+      text-align: left;
+    }
+    .rank-table td { padding: 8px 10px; font-size: 12px; border-bottom: 1px solid #f8fafc; }
+    .rank-table tr:last-child td { border-bottom: none; }
+    .rank-table tr:hover td { background: #fafbff; }
+
+    .rank-num {
+      width: 22px; height: 22px; border-radius: 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+    }
+
+    .bar-mini {
+      height: 6px; border-radius: 3px; display: inline-block;
+      transition: width 0.8s ease;
+    }
+
+    /* ===================== INSIGHT BOX ===================== */
+    .insight-box {
+      background: linear-gradient(135deg, #f0f4ff, #fce7f3);
+      border: 1px solid #c7d2fe;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-main);
+    }
+    .insight-box .insight-title {
+      font-weight: 700; color: var(--primary);
+      margin-bottom: 6px; font-size: 13px;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ===================== SEARCH / SELECT ===================== */
+    .search-input, .select-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      background: white;
+    }
+    .search-input:focus, .select-input:focus { border-color: var(--primary); }
+    .select-input option{
+   color:#1e293b;
+   background:white;
+}
+
+    /* ===================== HERO BANNER ===================== */
+    .hero-banner {
+      background: linear-gradient(135deg, #000000 0%, #0c7ab5 100%);
+      border-radius: 20px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid #e0e7ff;
+    }
+
+    .hero-text h2 {
+      font-size: 24px; font-weight: 800;
+      color: whitesmoke; line-height: 1.3; margin: 0 0 6px;
+    }
+    .hero-text h2 span { color: whitesmoke; }
+    .hero-text p { font-size: 13px; color: gainsboro; margin: 0; }
+
+    /* ===================== COMPARISON ===================== */
+    .compare-header {
+      background: linear-gradient(135deg, var(--secondary), #4f46e5);
+      border-radius: 16px;
+      padding: 20px 24px;
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .vs-badge {
+      background: white;
+      color: var(--secondary);
+      font-weight: 800;
+      border-radius: 50%;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    /* ===================== ANIMATIONS ===================== */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Staggered animation delays */
+    .kpi-card:nth-child(1) { animation-delay: 0.05s; }
+    .kpi-card:nth-child(2) { animation-delay: 0.1s; }
+    .kpi-card:nth-child(3) { animation-delay: 0.15s; }
+    .kpi-card:nth-child(4) { animation-delay: 0.2s; }
+    .kpi-card:nth-child(5) { animation-delay: 0.25s; }
+
+    /* ===================== COLOR HELPERS ===================== */
+    .bg-pink-soft { background: #fce7f3; }
+    .bg-blue-soft { background: #eff6ff; }
+    .bg-green-soft { background: #ecfdf5; }
+    .bg-orange-soft { background: #fffbeb; }
+    .bg-purple-soft { background: #f5f3ff; }
+    .bg-red-soft { background: #fef2f2; }
+
+    .text-pink { color: var(--primary); }
+    .text-blue { color: #3b82f6; }
+    .text-green { color: var(--success); }
+    .text-orange { color: var(--accent); }
+    .text-purple { color: var(--secondary); }
+    .text-red { color: var(--danger); }
+
+    /* ===================== PROVINCE DETAIL ===================== */
+    .province-hero {
+      background: linear-gradient(135deg, var(--sidebar-bg), var(--sidebar-accent));
+      border-radius: 20px;
+      padding: 24px;
+      color: white;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .prov-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Chart container */
+    .chart-container { position: relative; }
+
+    /* Footer */
+    .dash-footer {
+      background: var(--sidebar-bg);
+      color: #94a3b8;
+      text-align: center;
+      padding: 12px;
+      font-size: 11px;
+      margin-top: 32px;
+    }
+
+    /* Tab pills */
+    .tab-pills { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab-pill {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      background: #f1f5f9;
+      color: var(--text-muted);
+    }
+    .tab-pill.active {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    .tab-pill:hover { border-color: #e2e8f0; }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <img src="assets/Logo.png">
+      </div>
+      <div class="logo-text">
+        <div class="brand">Edu<span>Insight</span></div>
+        <div class="tagline">Data untuk Pendidikan<br>Indonesia Maju</div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <div class="nav-label">Menu Utama</div>
+      <div class="nav-item active" onclick="showPage('overview', this)">
+        <span class="nav-icon">🏠</span> Beranda Nasional
+      </div>
+      <div class="nav-item" onclick="showPage('provinsi', this)">
+        <span class="nav-icon">📋</span> Detail Provinsi
+      </div>
+      <div class="nav-item" onclick="showPage('perbandingan', this)">
+        <span class="nav-icon">⚖️</span> Perbandingan Provinsi
+      </div>
+
+      <div class="nav-label" style="margin-top:12px;">Informasi</div>
+      <div class="nav-item" onclick="showPage('tentang', this)">
+        <span class="nav-icon">ℹ️</span> Tentang Dashboard
+      </div>
+    </nav>
+
+    <!-- Mascot & Quote -->
+    <div class="sidebar-mascot">
+      <div class="mascot-box">
+        <!-- SVG Mascot: 3 cartoon students -->
+        <svg class="mascot-svg" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+          <!-- Student 1 (boy, left) -->
+          <g transform="translate(20,10)">
+            <!-- Body -->
+            <rect x="12" y="55" width="26" height="35" rx="6" fill="#6366f1"/>
+            <!-- Head -->
+            <circle cx="25" cy="42" r="18" fill="#fbbf24"/>
+            <!-- Hair -->
+            <path d="M8 38 Q25 20 42 38" fill="#1e293b"/>
+            <!-- Eyes -->
+            <circle cx="19" cy="42" r="2.5" fill="#1e293b"/>
+            <circle cx="31" cy="42" r="2.5" fill="#1e293b"/>
+            <!-- Smile -->
+            <path d="M18 49 Q25 54 32 49" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- Bag strap -->
+            <rect x="36" y="58" width="5" height="22" rx="2" fill="#4f46e5"/>
+            <!-- Arm with book -->
+            <rect x="2" y="60" width="14" height="8" rx="3" fill="#ef4444"/>
+            <rect x="4" y="58" width="10" height="12" rx="2" fill="#f87171"/>
+          </g>
+          <!-- Student 2 (girl, center) -->
+          <g transform="translate(75,5)">
+            <!-- Body -->
+            <rect x="12" y="55" width="26" height="38" rx="6" fill="#ec4899"/>
+            <!-- Skirt detail -->
+            <path d="M12 75 Q25 80 38 75 L38 93 Q25 98 12 93 Z" fill="#f9a8d4"/>
+            <!-- Head -->
+            <circle cx="25" cy="40" r="18" fill="#fbbf24"/>
+            <!-- Hair (hijab) -->
+            <ellipse cx="25" cy="38" rx="19" ry="20" fill="#1e293b"/>
+            <rect x="8" y="52" width="34" height="10" rx="5" fill="#1e293b"/>
+            <!-- Face -->
+            <circle cx="25" cy="40" r="13" fill="#fbbf24"/>
+            <!-- Eyes -->
+            <circle cx="20" cy="39" r="2.5" fill="#1e293b"/>
+            <circle cx="30" cy="39" r="2.5" fill="#1e293b"/>
+            <!-- Smile -->
+            <path d="M19 46 Q25 51 31 46" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- Arms up happy -->
+            <line x1="12" y1="65" x2="2" y2="50" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+            <line x1="38" y1="65" x2="48" y2="50" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+          </g>
+          <!-- Student 3 (boy, right) -->
+          <g transform="translate(135,10)">
+            <!-- Body -->
+            <rect x="12" y="55" width="26" height="35" rx="6" fill="#0ea5e9"/>
+            <!-- Head -->
+            <circle cx="25" cy="42" r="18" fill="#fcd34d"/>
+            <!-- Hair -->
+            <path d="M8 36 Q10 24 25 22 Q40 24 42 36" fill="#92400e"/>
+            <!-- Eyes -->
+            <circle cx="19" cy="42" r="2.5" fill="#1e293b"/>
+            <circle cx="31" cy="42" r="2.5" fill="#1e293b"/>
+            <!-- Smile -->
+            <path d="M18 49 Q25 54 32 49" stroke="#1e293b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- Bag -->
+            <rect x="36" y="58" width="5" height="22" rx="2" fill="#0284c7"/>
+            <!-- Trophy -->
+            <rect x="-2" y="60" width="14" height="8" rx="3" fill="#fbbf24"/>
+            <circle cx="5" cy="58" r="5" fill="#f59e0b"/>
+            <text x="2" y="61" font-size="7" fill="white">🏆</text>
+          </g>
+        </svg>
+        <div class="mascot-quote">"Data hari ini, untuk pendidikan yang lebih baik esok hari." 💙</div>
+        <div class="year-badge">📅 Tahun Ajaran 2025/2026</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN ==================== -->
+  <main class="main-content">
+
+    <!-- TOP HEADER -->
+    <header class="top-header">
+      <div class="header-title">
+        <h1>Dashboard Statistik Sekolah Indonesia 2025/2026</h1>
+        <p>Analisis Ketimpangan Pendidikan & Risiko Putus Sekolah — Dapodik Kemendikdasmen</p>
+      </div>
+      
+    </header>
+
+    <!-- ==================== PAGE 1: OVERVIEW ==================== -->
+    <section id="page-overview" class="page active">
+
+      <!-- Hero Banner -->
+      <div class="hero-banner">
+        <div class="hero-text">
+          <h2>Bersama Data, Membangun<br><span>Pendidikan Indonesia yang Merata & Berkualitas</span></h2>
+          <p>Gunakan data untuk memahami, menganalisis, dan membuat keputusan yang berdampak bagi 37,93 juta peserta didik di seluruh Indonesia.</p>
+        </div>
+        <!-- Inline SVG hero illustration -->
+        
+          
+        </svg>
+      </div>
+
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon bg-blue-soft"><img src="assets/2.png"></div>
+          <div class="kpi-label">Total Murid</div>
+          <div class="kpi-value">37,93 <span class="kpi-unit">Juta</span></div>
+          <div class="kpi-sub">Seluruh Jenjang</div>
+          <div class="kpi-trend trend-up">▲ 2,45% dari 2024</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon bg-green-soft"><img src="assets/3.png"></div>
+          <div class="kpi-label">Total Guru</div>
+          <div class="kpi-value">2,58 <span class="kpi-unit">Juta</span></div>
+          <div class="kpi-sub">Seluruh Jenjang</div>
+          <div class="kpi-trend trend-up">▲ 2,18% dari 2024</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon bg-orange-soft"><img src="assets/4.png"></div>
+          <div class="kpi-label">Total Sekolah</div>
+          <div class="kpi-value">208,95 <span class="kpi-unit">Ribu</span></div>
+          <div class="kpi-sub">Seluruh Jenjang</div>
+          <div class="kpi-trend trend-up">▲ 1,67% dari 2024</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon bg-red-soft"><img src="assets/5.png"></div>
+          <div class="kpi-label">Angka Putus Sekolah</div>
+          <div class="kpi-value">0,123 <span class="kpi-unit">%</span></div>
+          <div class="kpi-sub">Dari Total Murid</div>
+          <div class="kpi-trend trend-down">▼ 8,32% dari 2024</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon bg-purple-soft"><img src="assets/6.png"></div>
+          <div class="kpi-label">Rasio Murid/Guru</div>
+          <div class="kpi-value">14,73</div>
+          <div class="kpi-sub">Rata-rata Nasional</div>
+          <div class="kpi-trend trend-down">▼ 0,74 dari 2024</div>
+        </div>
+      </div>
+
+      <!-- Charts Row 1 -->
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- Donut Chart: Komposisi Murid -->
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-blue-soft"><img src="assets/7.png"></div>
+            Proporsi Murid per Jenjang Pendidikan
+          </div>
+          <div style="display:flex;align-items:center;gap:24px;">
+            <div class="chart-container" style="width:200px;height:200px;flex-shrink:0;">
+              <canvas id="donutJenjang"></canvas>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:28px;font-weight:800;color:var(--text-main);">24,03 Jt</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-bottom:16px;">Total Peserta Didik</div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:12px;height:12px;border-radius:3px;background:#3b82f6;display:inline-block;"></span><span style="font-size:12px;">SD</span></div>
+                  <div style="font-size:12px;font-weight:700;">10,1 Jt <span style="color:var(--text-muted);font-weight:400;">(62,1%)</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:12px;height:12px;border-radius:3px;background:#ec4899;display:inline-block;"></span><span style="font-size:12px;">SMP</span></div>
+                  <div style="font-size:12px;font-weight:700;">9,39 Jt <span style="color:var(--text-muted);font-weight:400;">(24,7%)</span></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="display:flex;align-items:center;gap:8px;"><span style="width:12px;height:12px;border-radius:3px;background:#f59e0b;display:inline-block;"></span><span style="font-size:12px;">SMA</span></div>
+                  <div style="font-size:12px;font-weight:700;">5,4 Jt <span style="color:var(--text-muted);font-weight:400;">(13,2%)</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bar Chart: Top 10 Provinsi Putus Sekolah -->
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-red-soft">📈</div>
+            Top 10 Provinsi Indonesia dengan Angka Putus Sekolah Tertinggi
+          </div>
+          <div class="chart-container" style="height:220px;">
+            <canvas id="barPutusSekolah"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row 2 -->
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- Rasio Murid/Guru per Jenjang -->
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-green-soft">📏</div>
+            Rasio Murid/Guru per Jenjang
+          </div>
+          <div class="chart-container" style="height:200px;">
+            <canvas id="barRasio"></canvas>
+          </div>
+        </div>
+
+        <!-- Trend Putus Sekolah Tahunan -->
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-orange-soft">📉</div>
+            Tren Angka Putus Sekolah (2020–2025)
+          </div>
+          <div class="chart-container" style="height:200px;">
+            <canvas id="lineTrend"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top 5 & Bottom 5 Tables -->
+      <div class="grid-2" style="margin-bottom:20px;">
+        <!-- Top 5 Tertinggi -->
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-red-soft">🔴</div>
+            Top 5 Provinsi Teratas
+          </div>
+          <div class="tab-pills" id="tabTop">
+            <div class="tab-pill active" onclick="switchTabTop('putus', this)">Putus Sekolah</div>
+            <div class="tab-pill" onclick="switchTabTop('rasio', this)">Rasio Murid/Guru</div>
+            <div class="tab-pill" onclick="switchTabTop('akreditasi', this)">Akreditasi A</div>
+          </div>
+          <table class="rank-table" id="tableTop">
+            <thead><tr>
+              <th>#</th><th>Provinsi</th><th>Nilai</th><th>Visualisasi</th>
+            </tr></thead>
+            <tbody id="tbodyTop"></tbody>
+          </table>
+        </div>
+
+        <!-- Bottom 5 Terendah -->
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-green-soft">🟢</div>
+            Top 5 Provinsi Terendah
+          </div>
+          <div class="tab-pills" id="tabBottom">
+            <div class="tab-pill active" onclick="switchTabBottom('putus', this)">Putus Sekolah</div>
+            <div class="tab-pill" onclick="switchTabBottom('rasio', this)">Rasio Murid/Guru</div>
+            <div class="tab-pill" onclick="switchTabBottom('akreditasi', this)">Akreditasi A</div>
+          </div>
+          <table class="rank-table" id="tableBottom">
+            <thead><tr>
+              <th>#</th><th>Provinsi</th><th>Nilai</th><th>Visualisasi</th>
+            </tr></thead>
+            <tbody id="tbodyBottom"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Distribusi Sekolah & Akreditasi -->
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-purple-soft">🏆</div>
+            Distribusi Akreditasi Sekolah Nasional
+          </div>
+          <div class="chart-container" style="height:200px;">
+            <canvas id="donutAkreditasi"></canvas>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="section-title">
+            <div class="section-title-icon bg-blue-soft">🗺️</div>
+            Jumlah Sekolah per Pulau Besar
+          </div>
+          <div class="chart-container" style="height:200px;">
+            <canvas id="barPulau"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Insight Box -->
+      <div class="section-card" style="margin-bottom:20px;">
+        <div class="section-title">
+          <div class="section-title-icon bg-pink-soft">💡</div>
+          Ringkasan Insight & Rekomendasi
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+          <div class="insight-box">
+            <div class="insight-title">📍 Ketimpangan Wilayah</div>
+           Masih terdapat kesenjangan pendidikan antarprovinsi. Daerah tertentu membutuhkan dukungan lebih besar untuk menciptakan akses belajar yang merata.
+          </div>
+          <div class="insight-box" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#a7f3d0;">
+            <div class="insight-title" style="color:#065f46;">✅ Tren Positif</div>
+            Analisis tren menunjukkan perbaikan berkelanjutan pada indikator pendidikan nasional dalam beberapa tahun terakhir.
+          </div>
+          <div class="insight-box" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d;">
+            <div class="insight-title" style="color:#92400e;">⚠️ Perhatian Guru</div>
+            Analisis rasio guru menunjukkan kebutuhan pemerataan tenaga pendidik pada wilayah dan jenjang tertentu.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== PAGE 2: DETAIL PROVINSI ==================== -->
+    <section id="page-provinsi" class="page">
+<div id="detailProvinsi">
+  <div class="empty-state">
+    Silakan pilih provinsi untuk melihat data lengkap
+  </div>
+</div>
+
+<div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+
+  <div style="flex:1;">
+    <h2 style="font-size:20px;font-weight:800;margin:0 0 4px;">
+      Detail Data Provinsi
+    </h2>
+
+    <p style="font-size:13px;color:var(--text-muted);margin:0;">
+      Pilih atau cari provinsi untuk melihat data lengkap
+    </p>
+  </div>
+
+  <!-- Search -->
+  <div style="width:320px;">
+    <input 
+      type="text" 
+      class="search-input" 
+      id="searchProvinsi" 
+      placeholder="🔍 Cari provinsi..." 
+      oninput="filterProvinsi(this.value)" 
+    />
+  </div>
+
+  <!-- Select -->
+  <div style="width:240px;">
+    <select 
+      class="select-input" 
+      id="selectProvinsi" 
+      onchange="loadProvinsiDetail(this.value)"
+    >
+      <option value="">— Pilih Provinsi —</option>
+    </select>
+  </div>
+
+  <!-- Tombol Reset -->
+  <button onclick="resetProvinsi()" class="reset-btn">
+    Reset
+  </button>
+
+</div>
+
+      <!-- Province detail area -->
+      <div id="provinsiDetail">
+        <!-- Default: show all province cards in grid -->
+        <div id="provinsiGrid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+          <!-- filled by JS -->
+        </div>
+
+        <!-- Province full detail (hidden by default) -->
+        <div id="provinsiFullDetail" style="display:none;">
+          <div class="province-hero">
+            <div style="flex:1;">
+              <div style="font-size:12px;color:#a5b4fc;margin-bottom:6px;">📍 Provinsi</div>
+              <div id="provHeroName" style="font-size:28px;font-weight:800;margin-bottom:4px;"></div>
+              <div id="provHeroPulau" style="font-size:13px;color:#c7d2fe;"></div>
+            </div>
+            <!-- Student SVG -->
+            <svg width="180" height="100" viewBox="0 0 180 100" xmlns="http://www.w3.org/2000/svg" opacity="0.85">
+              <!-- Boy student -->
+              <circle cx="55" cy="35" r="16" fill="#fbbf24"/>
+              <path d="M40 28 Q55 15 70 28" fill="#1e293b"/>
+              <circle cx="49" cy="35" r="2" fill="#1e293b"/>
+              <circle cx="61" cy="35" r="2" fill="#1e293b"/>
+              <path d="M48 42 Q55 47 62 42" stroke="#1e293b" stroke-width="1.5" fill="none"/>
+              <rect x="43" y="50" width="24" height="32" rx="5" fill="#6366f1"/>
+              <rect x="65" y="53" width="6" height="20" rx="2" fill="#4f46e5"/>
+              <!-- Girl student -->
+              <circle cx="125" cy="33" r="16" fill="#fbbf24"/>
+              <ellipse cx="125" cy="30" rx="17" ry="18" fill="#1e293b"/>
+              <rect x="109" y="42" width="32" height="8" rx="4" fill="#1e293b"/>
+              <circle cx="125" cy="34" r="11" fill="#fbbf24"/>
+              <circle cx="119" cy="33" r="2" fill="#1e293b"/>
+              <circle cx="131" cy="33" r="2" fill="#1e293b"/>
+              <path d="M118 40 Q125 45 132 40" stroke="#1e293b" stroke-width="1.5" fill="none"/>
+              <rect x="113" y="50" width="24" height="32" rx="5" fill="#ec4899"/>
+              <path d="M113 70 Q125 76 137 70 L137 82 Q125 88 113 82Z" fill="#f9a8d4"/>
+              <line x1="113" y1="62" x2="103" y2="48" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+              <line x1="137" y1="62" x2="147" y2="48" stroke="#fbbf24" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <!-- Province KPI Grid -->
+          <div class="prov-kpi-grid" id="provKpiGrid"></div>
+
+          <!-- Province Charts -->
+          <div class="grid-2" style="margin-bottom:20px;">
+            <div class="section-card">
+              <div class="section-title">
+                <div class="section-title-icon bg-blue-soft">📊</div>
+                Komposisi Murid per Jenjang
+              </div>
+              <div class="chart-container" style="height:220px;">
+                <canvas id="provDonut"></canvas>
+              </div>
+            </div>
+            <div class="section-card">
+              <div class="section-title">
+                <div class="section-title-icon bg-orange-soft">👨‍🏫</div>
+                Perbandingan dengan Rata-rata Nasional
+              </div>
+              <div class="chart-container" style="height:220px;">
+                <canvas id="provRadar"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-card" style="margin-bottom:20px;">
+            <div class="section-title">
+              <div class="section-title-icon bg-green-soft">📋</div>
+              Data Lengkap Provinsi
+            </div>
+            <div id="provDataTable"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 3: PERBANDINGAN ==================== -->
+    <section id="page-perbandingan" class="page">
+
+      <div class="compare-header">
+        <h2 style="font-size:20px;font-weight:800;margin:0 0 4px;">Perbandingan Antar Provinsi</h2>
+        <p style="font-size:13px;color:#c7d2fe;margin:0 0 16px;">Pilih dua provinsi untuk membandingkan semua indikator pendidikan</p>
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;">
+          <select class="select-input" id="cmpA" onchange="updateComparison()" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:white;">
+            <option value="">— Provinsi A —</option>
+          </select>
+          <div class="vs-badge">VS</div>
+          <select class="select-input" id="cmpB" onchange="updateComparison()" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);color:white;">
+            <option value="">— Provinsi B —</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Comparison results -->
+      <div id="cmpResult" style="display:none;">
+        <!-- Header comparison -->
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:center;margin-bottom:20px;">
+          <div class="section-card" style="text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:var(--secondary);" id="cmpNameA"></div>
+            <div style="font-size:12px;color:var(--text-muted);" id="cmpPulauA"></div>
+          </div>
+          <div style="text-align:center;font-size:32px;font-weight:900;color:var(--text-muted);">⚡</div>
+          <div class="section-card" style="text-align:center;">
+            <div style="font-size:24px;font-weight:800;color:#ec4899;" id="cmpNameB"></div>
+            <div style="font-size:12px;color:var(--text-muted);" id="cmpPulauB"></div>
+          </div>
+        </div>
+
+        <!-- KPI comparison grid -->
+        <div id="cmpKpiGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;"></div>
+
+        <!-- Charts -->
+        <div class="grid-2" style="margin-bottom:20px;">
+          <div class="section-card">
+            <div class="section-title">
+              <div class="section-title-icon bg-blue-soft">📊</div>
+              Perbandingan Indikator Utama (Radar)
+            </div>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="cmpRadar"></canvas>
+            </div>
+          </div>
+          <div class="section-card">
+            <div class="section-title">
+              <div class="section-title-icon bg-green-soft">📈</div>
+              Perbandingan Detail per Aspek
+            </div>
+            <div class="chart-container" style="height:280px;">
+              <canvas id="cmpBar"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card" style="margin-bottom:20px;">
+          <div class="section-title">
+            <div class="section-title-icon bg-orange-soft">📋</div>
+            Tabel Perbandingan Lengkap
+          </div>
+          <div id="cmpTable"></div>
+        </div>
+      </div>
+
+      <div id="cmpPlaceholder" class="section-card" style="text-align:center;padding:60px 20px;">
+        <div style="font-size:64px;margin-bottom:16px;">⚖️</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px;">Pilih Dua Provinsi untuk Membandingkan</div>
+        <div style="font-size:13px;color:var(--text-muted);">Gunakan dropdown di atas untuk memilih provinsi yang ingin dibandingkan</div>
+      </div>
+    </section>
+
+    <!-- ==================== PAGE 4: TENTANG ==================== -->
+    <section id="page-tentang" class="page">
+      <div class="section-card" style="max-width:700px;margin:0 auto;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="font-size:64px;margin-bottom:12px;">🎓</div>
+          <h2 style="font-size:24px;font-weight:800;">EduInsight Dashboard</h2>
+          <p style="color:var(--text-muted);font-size:13px;">Data untuk Pendidikan Indonesia Maju</p>
+        </div>
+        <div class="insight-box" style="margin-bottom:16px;">
+          <div class="insight-title">📊 Tentang Dashboard</div>
+          Dashboard Statistik Sekolah Indonesia 2025/2026 adalah platform analitik pendidikan yang menyajikan data komprehensif dari Dapodik (Data Pokok Pendidikan) Kemendikdasmen. Dashboard ini dirancang untuk membantu pengambil keputusan, peneliti, dan masyarakat umum dalam memahami kondisi pendidikan Indonesia secara data-driven.
+        </div>
+        <div class="insight-box" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#a7f3d0;margin-bottom:16px;">
+          <div class="insight-title" style="color:#065f46;">📂 Sumber Data</div>
+          Data bersumber dari Dapodik Kemendikdasmen, diperbarui per April 2026 untuk Tahun Ajaran 2025/2026. Mencakup data dari 38 provinsi di seluruh Indonesia, meliputi seluruh jenjang pendidikan dari SD, SMP, hingga SMA.
+        </div>
+        <div class="grid-2">
+          <div class="insight-box" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);border-color:#fcd34d;">
+            <div class="insight-title" style="color:#92400e;">🛠️ Teknologi</div>
+            HTML5 · Tailwind CSS · Chart.js · JavaScript Vanilla
+          </div>
+          <div class="insight-box" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-color:#c4b5fd;">
+            <div class="insight-title" style="color:#4c1d95;">📧 Kontak</div>
+            aanashidiqi24@students.unnes.ac.id<br>nurrizal48@students.unnes.ac.id<br>karinatha95@students.unnes.ac.id<br>cintakhoirina181@students.unnes.ac.id<br>salmayuanissalmaadyani308@students.unnes.ac.id
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div class="dash-footer">
+      <strong>EduInsight</strong> — Dashboard Statistik Sekolah Indonesia 2025/2026 &nbsp;|&nbsp;
+      Sumber Data: Dapodik Kemendikdasmen &nbsp;|&nbsp; Diperbarui: April 2026
+    </div>
+
+  </main>
+</div>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// ============================================================
+//  DATA — Seluruh 38 Provinsi Indonesia (data representatif)
+// ============================================================
+const DATA_PROVINSI = [
+  // nama, pulau, murid_total(juta), guru_total(ribu), sekolah_total(ribu),
+  // pct_putus_sekolah, rasio_murid_guru, pct_akreditasi_a,
+  // sd_murid(juta), smp_murid(juta), sma_murid(juta)
+  {id:"ACEH",           nama:"Aceh",                  pulau:"Sumatera",  murid:0.894, guru:110.008,  sekolah:5.91,  putus:0.095, rasio:11.4, akr_a:38.2, sd:0.520, smp:0.215, sma:0.159},
+  {id:"SUMUT",          nama:"Sumatera Utara",         pulau:"Sumatera",  murid:2.891, guru:215.311, sekolah:14.20, putus:0.078, rasio:13.4, akr_a:45.1, sd:1.680, smp:0.712, sma:0.499},
+  {id:"SUMBAR",         nama:"Sumatera Barat",         pulau:"Sumatera",  murid:0.791, guru:91.982,  sekolah:5.21,  putus:0.067, rasio:10.9, akr_a:52.3, sd:0.450, smp:0.198, sma:0.143},
+  {id:"RIAU",           nama:"Riau",                   pulau:"Sumatera",  murid:0.820, guru:106.644,  sekolah:5.43,  putus:0.062, rasio:12.1, akr_a:48.7, sd:0.475, smp:0.205, sma:0.140},
+  {id:"JAMBI",          nama:"Jambi",                  pulau:"Sumatera",  murid:0.554, guru:58.703,  sekolah:3.71,  putus:0.054, rasio:11.5, akr_a:41.5, sd:0.322, smp:0.140, sma:0.092},
+  {id:"SUMSEL",         nama:"Sumatera Selatan",       pulau:"Sumatera",  murid:1.341, guru:122.972, sekolah:8.12,  putus:0.073, rasio:12.4, akr_a:43.8, sd:0.780, smp:0.338, sma:0.223},
+  {id:"BENGKULU",       nama:"Bengkulu",               pulau:"Sumatera",  murid:0.300, guru:38.381,  sekolah:2.01,  putus:0.061, rasio:11.3, akr_a:40.2, sd:0.174, smp:0.076, sma:0.050},
+  {id:"LAMPUNG",        nama:"Lampung",                pulau:"Sumatera",  murid:1.321, guru:117.246, sekolah:7.82,  putus:0.068, rasio:12.7, akr_a:42.0, sd:0.767, smp:0.333, sma:0.221},
+  {id:"BABEL",          nama:"Kep. Bangka Belitung",   pulau:"Sumatera",  murid:0.204, guru:18.869,  sekolah:1.27,  putus:0.059, rasio:11.2, akr_a:46.3, sd:0.118, smp:0.052, sma:0.034},
+  {id:"KEPRI",          nama:"Kepulauan Riau",         pulau:"Sumatera",  murid:0.291, guru:29.363,  sekolah:1.82,  putus:0.049, rasio:11.7, akr_a:54.1, sd:0.169, smp:0.073, sma:0.049},
+  {id:"DKI",            nama:"DKI Jakarta",            pulau:"Jawa",      murid:1.432, guru:93.125, sekolah:5.93,  putus:0.018, rasio:13.3, akr_a:82.4, sd:0.832, smp:0.360, sma:0.240},
+  {id:"JABAR",          nama:"Jawa Barat",             pulau:"Jawa",      murid:6.812, guru:491.74, sekolah:31.41, putus:0.034, rasio:13.8, akr_a:65.7, sd:3.960, smp:1.712, sma:1.140},
+  {id:"JATENG",         nama:"Jawa Tengah",            pulau:"Jawa",      murid:4.981, guru:352.547, sekolah:24.80, putus:0.028, rasio:13.0, akr_a:68.2, sd:2.893, smp:1.253, sma:0.835},
+  {id:"DIY",            nama:"DI Yogyakarta",          pulau:"Jawa",      murid:0.582, guru:49.654,  sekolah:2.89,  putus:0.011, rasio:10.9, akr_a:79.3, sd:0.338, smp:0.147, sma:0.097},
+  {id:"JATIM",          nama:"Jawa Timur",             pulau:"Jawa",      murid:5.201, guru:409.102, sekolah:25.92, putus:0.026, rasio:12.9, akr_a:71.5, sd:3.022, smp:1.307, sma:0.872},
+  {id:"BANTEN",         nama:"Banten",                 pulau:"Jawa",      murid:1.580, guru:128.191, sekolah:7.82,  putus:0.041, rasio:13.5, akr_a:57.8, sd:0.918, smp:0.398, sma:0.264},
+  {id:"BALI",           nama:"Bali",                   pulau:"Bali",      murid:0.581, guru:50.270,  sekolah:3.12,  putus:0.019, rasio:11.4, akr_a:73.2, sd:0.338, smp:0.146, sma:0.097},
+  {id:"NTB",            nama:"Nusa Tenggara Barat",    pulau:"Nusa Tenggara", murid:0.811, guru:103.014, sekolah:5.21, putus:0.048, rasio:12.4, akr_a:44.5, sd:0.471, smp:0.205, sma:0.135},
+  {id:"NTT",            nama:"Nusa Tenggara Timur",    pulau:"Nusa Tenggara", murid:0.971, guru:123.833, sekolah:6.82, putus:0.067, rasio:12.7, akr_a:36.8, sd:0.564, smp:0.244, sma:0.163},
+  {id:"KALBAR",         nama:"Kalimantan Barat",       pulau:"Kalimantan", murid:0.801, guru:75.042, sekolah:5.71,  putus:0.058, rasio:12.5, akr_a:39.2, sd:0.465, smp:0.202, sma:0.134},
+  {id:"KALTENG",        nama:"Kalimantan Tengah",      pulau:"Kalimantan", murid:0.431, guru:49.551, sekolah:3.21,  putus:0.052, rasio:11.3, akr_a:42.1, sd:0.250, smp:0.109, sma:0.072},
+  {id:"KALSEL",         nama:"Kalimantan Selatan",     pulau:"Kalimantan", murid:0.612, guru:57.819, sekolah:3.92,  putus:0.044, rasio:11.6, akr_a:50.8, sd:0.355, smp:0.154, sma:0.103},
+  {id:"KALTIM",         nama:"Kalimantan Timur",       pulau:"Kalimantan", murid:0.481, guru:57.336, sekolah:2.91,  putus:0.038, rasio:11.6, akr_a:58.3, sd:0.279, smp:0.121, sma:0.081},
+  {id:"KALTARA",        nama:"Kalimantan Utara",       pulau:"Kalimantan", murid:0.142, guru:13.155, sekolah:1.01,  putus:0.047, rasio:11.1, akr_a:38.5, sd:0.082, smp:0.036, sma:0.024},
+  {id:"SULUT",          nama:"Sulawesi Utara",         pulau:"Sulawesi",  murid:0.371, guru:40.213,  sekolah:2.61,  putus:0.039, rasio:11.2, akr_a:51.4, sd:0.215, smp:0.094, sma:0.062},
+  {id:"SULTENG",        nama:"Sulawesi Tengah",        pulau:"Sulawesi",  murid:0.504, guru:57.014,  sekolah:3.81,  putus:0.072, rasio:11.8, akr_a:37.9, sd:0.293, smp:0.127, sma:0.084},
+  {id:"SULSEL",         nama:"Sulawesi Selatan",       pulau:"Sulawesi",  murid:1.321, guru:139.339, sekolah:8.12,  putus:0.042, rasio:12.1, akr_a:53.2, sd:0.767, smp:0.333, sma:0.221},
+  {id:"SULTRA",         nama:"Sulawesi Tenggara",      pulau:"Sulawesi",  murid:0.391, guru:63.452,  sekolah:2.81,  putus:0.055, rasio:11.5, akr_a:41.3, sd:0.227, smp:0.099, sma:0.065},
+  {id:"GORONTALO",      nama:"Gorontalo",              pulau:"Sulawesi",  murid:0.201, guru:18.809,  sekolah:1.41,  putus:0.061, rasio:11.2, akr_a:39.8, sd:0.117, smp:0.051, sma:0.033},
+  {id:"SULBAR",         nama:"Sulawesi Barat",         pulau:"Sulawesi",  murid:0.212, guru:30.078,  sekolah:1.51,  putus:0.058, rasio:11.3, akr_a:38.1, sd:0.123, smp:0.053, sma:0.036},
+  {id:"MALUKU",         nama:"Maluku",                 pulau:"Maluku",    murid:0.352, guru:41.946,  sekolah:2.71,  putus:0.063, rasio:11.2, akr_a:36.2, sd:0.204, smp:0.089, sma:0.059},
+  {id:"MALUT",          nama:"Maluku Utara",           pulau:"Maluku",    murid:0.221, guru:28.463,  sekolah:1.82,  putus:0.081, rasio:11.2, akr_a:33.5, sd:0.128, smp:0.056, sma:0.037},
+  {id:"PAPUA_BARAT",    nama:"Papua Barat",            pulau:"Papua",     murid:0.181, guru:11.022,  sekolah:1.61,  putus:0.125, rasio:11.2, akr_a:24.1, sd:0.105, smp:0.046, sma:0.030},
+  {id:"PAPBAR_DAYA",    nama:"Papua Barat Daya",       pulau:"Papua",     murid:0.092, guru:10.320,   sekolah:0.92,  putus:0.108, rasio:10.9, akr_a:21.3, sd:0.053, smp:0.023, sma:0.016},
+  {id:"PAPUA",          nama:"Papua",                  pulau:"Papua",     murid:0.332, guru:16.423,  sekolah:3.21,  putus:0.098, rasio:11.6, akr_a:22.8, sd:0.193, smp:0.084, sma:0.055},
+  {id:"PAP_SEL",        nama:"Papua Selatan",          pulau:"Papua",     murid:0.071, guru:8.917,   sekolah:0.75,  putus:0.289, rasio:10.4, akr_a:18.2, sd:0.041, smp:0.018, sma:0.012},
+  {id:"PAP_TEN",        nama:"Papua Tengah",           pulau:"Papua",     murid:0.089, guru:11.454,   sekolah:0.91,  putus:0.172, rasio:10.9, akr_a:19.4, sd:0.052, smp:0.022, sma:0.015},
+  {id:"PAP_PEG",        nama:"Papua Pegunungan",       pulau:"Papua",     murid:0.063, guru:8.023,   sekolah:0.72,  putus:0.221, rasio:10.3, akr_a:17.5, sd:0.037, smp:0.016, sma:0.010},
+];
+
+// Sort alphabetically
+DATA_PROVINSI.sort((a,b)=>a.nama.localeCompare(b.nama));
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  el.classList.add('active');
+}
+
+// ============================================================
+//  CHART INSTANCES (untuk destroy sebelum recreate)
+// ============================================================
+const chartInstances = {};
+function getOrDestroyChart(id) {
+  if (chartInstances[id]) chartInstances[id].destroy();
+}
+
+// ============================================================
+//  PAGE 1: OVERVIEW CHARTS
+// ============================================================
+function initOverview() {
+  // Donut Jenjang
+  getOrDestroyChart('donutJenjang');
+  chartInstances['donutJenjang'] = new Chart(document.getElementById('donutJenjang'), {
+    type: 'doughnut',
+    data: {
+      labels: ['SD','SMP','SMA'],
+      datasets: [{
+        data: [10.1, 9.39, 5.4],
+        backgroundColor: ['#3b82f6','#ec4899','#f59e0b'],
+        borderWidth: 3, borderColor: '#fff',
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { display:false }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed} Juta` } } },
+      animation: { animateRotate: true, duration: 1200 }
+    }
+  });
+
+  // Bar Putus Sekolah
+  const topPutus = [...DATA_PROVINSI].sort((a,b)=>b.putus-a.putus).slice(0,10);
+  getOrDestroyChart('barPutusSekolah');
+  chartInstances['barPutusSekolah'] = new Chart(document.getElementById('barPutusSekolah'), {
+    type: 'bar',
+    data: {
+      labels: topPutus.map(p=>p.nama),
+      datasets: [{
+        label: 'Angka Putus Sekolah (%)',
+        data: topPutus.map(p=>p.putus),
+        backgroundColor: topPutus.map((p,i)=>i<3?'#ef4444':'#3b82f6'),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { beginAtZero:true, ticks:{ font:{size:10}, callback: v=>v+'%' } },
+        y: { ticks:{ font:{size:10} } }
+      },
+      animation: { duration: 1000 }
+    }
+  });
+
+  // Bar Rasio per Jenjang
+  getOrDestroyChart('barRasio');
+  chartInstances['barRasio'] = new Chart(document.getElementById('barRasio'), {
+    type: 'bar',
+    data: {
+      labels: ['SD','SMP','SMA','Rata-rata Nasional'],
+      datasets: [{
+        label: 'Rasio Murid/Guru',
+        data: [14.2, 13.8, 18.2, 14.73],
+        backgroundColor: ['#3b82f6','#ec4899','#ef4444','#6366f1'],
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ beginAtZero:true, max:22, ticks:{font:{size:10}} },
+        x:{ ticks:{font:{size:11}} }
+      },
+      animation:{ duration:900 }
+    }
+  });
+
+  // Line Trend
+  getOrDestroyChart('lineTrend');
+  chartInstances['lineTrend'] = new Chart(document.getElementById('lineTrend'), {
+    type: 'line',
+    data: {
+      labels: ['2020','2021','2022','2023','2024','2025'],
+      datasets: [
+        { label:'Nasional', data:[0.187, 0.195, 0.178, 0.159, 0.134, 0.123], borderColor:'#e11d78', backgroundColor:'rgba(225,29,120,0.08)', tension:0.4, fill:true, pointRadius:4 },
+        { label:'Papua', data:[0.356, 0.378, 0.341, 0.298, 0.275, 0.289], borderColor:'#ef4444', backgroundColor:'rgba(239,68,68,0.05)', tension:0.4, fill:true, pointRadius:4 },
+        { label:'DI Yogyakarta', data:[0.021, 0.019, 0.017, 0.015, 0.013, 0.011], borderColor:'#10b981', backgroundColor:'rgba(16,185,129,0.05)', tension:0.4, fill:true, pointRadius:4 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ font:{size:11} } } },
+      scales:{
+        y:{ ticks:{ callback: v=>v.toFixed(2)+'%', font:{size:10} } },
+        x:{ ticks:{ font:{size:10} } }
+      },
+      animation:{ duration:1000 }
+    }
+  });
+
+  // Donut Akreditasi
+  getOrDestroyChart('donutAkreditasi');
+  chartInstances['donutAkreditasi'] = new Chart(document.getElementById('donutAkreditasi'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Akreditasi A','Akreditasi B','Akreditasi C','Belum Akreditasi'],
+      datasets: [{
+        data: [52.4, 28.1, 12.3, 7.2],
+        backgroundColor: ['#10b981','#3b82f6','#f59e0b','#ef4444'],
+        borderWidth:3, borderColor:'#fff', hoverOffset:6
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout:'60%',
+      plugins:{ legend:{ position:'right', labels:{ font:{size:10} } } },
+      animation:{ duration:1100 }
+    }
+  });
+
+  // Bar Sekolah per Pulau
+  getOrDestroyChart('barPulau');
+  chartInstances['barPulau'] = new Chart(document.getElementById('barPulau'), {
+    type: 'bar',
+    data: {
+      labels: ['Jawa','Sumatera','Kalimantan','Sulawesi','Nusa\nTenggara','Maluku','Papua','Bali'],
+      datasets: [{
+        label: 'Jumlah Sekolah (Ribu)',
+        data: [98.77, 53.19, 16.76, 20.27, 12.03, 4.53, 7.11, 3.12],
+        backgroundColor: ['#6366f1','#3b82f6','#ec4899','#f59e0b','#10b981','#8b5cf6','#ef4444','#06b6d4'],
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        y:{ beginAtZero:true, ticks:{ font:{size:10} } },
+        x:{ ticks:{ font:{size:9} } }
+      },
+      animation:{ duration:900 }
+    }
+  });
+
+  // Populate Top/Bottom tables
+  renderTopBottom('putus');
+}
+
+// ============================================================
+//  TOP/BOTTOM TABLES
+// ============================================================
+const topFields = {
+  putus: { key:'putus', label:'Putus Sekolah (%)', fmt: v=>v.toFixed(3)+'%', maxVal:0.289 },
+  rasio: { key:'rasio', label:'Rasio Murid/Guru', fmt: v=>v.toFixed(1), maxVal:18 },
+  akreditasi: { key:'akr_a', label:'Akreditasi A (%)', fmt: v=>v.toFixed(1)+'%', maxVal:82 }
+};
+
+function renderTopBottom(field) {
+  const f = topFields[field];
+  const sorted = [...DATA_PROVINSI].sort((a,b)=>b[f.key]-a[f.key]);
+  const top5 = sorted.slice(0,5);
+  const bot5 = sorted.slice(-5).reverse();
+
+  const colors = ['#ef4444','#f97316','#f59e0b','#84cc16','#10b981'];
+
+  function renderRows(data, isTop) {
+    return data.map((p,i)=>{
+      const val = p[f.key];
+      const pct = Math.min(100, (val/f.maxVal)*100);
+      const color = isTop ? colors[i] : colors[4-i];
+      const num = isTop ? i+1 : sorted.indexOf(p)+1;
+      return `<tr>
+        <td><span class="rank-num" style="background:${color}20;color:${color};">${num}</span></td>
+        <td style="font-weight:600;font-size:12px;">${p.nama}</td>
+        <td style="font-weight:700;color:${color};">${f.fmt(val)}</td>
+        <td><div class="bar-mini" style="width:${Math.max(8,pct*1.1)}px;background:${color};"></div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  document.getElementById('tbodyTop').innerHTML = renderRows(top5, true);
+  document.getElementById('tbodyBottom').innerHTML = renderRows(bot5, false);
+}
+
+function switchTabTop(field, el) {
+  document.querySelectorAll('#tabTop .tab-pill').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderTopBottom(field);
+}
+function switchTabBottom(field, el) {
+  document.querySelectorAll('#tabBottom .tab-pill').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderTopBottom(field);
+}
+
+// ============================================================
+//  PAGE 2: DETAIL PROVINSI
+// ============================================================
+function initProvinsiPage() {
+  const sel = document.getElementById('selectProvinsi');
+  const grid = document.getElementById('provinsiGrid');
+
+  DATA_PROVINSI.forEach(p => {
+    // Populate select
+    const opt = document.createElement('option');
+    opt.value = p.id; opt.textContent = p.nama;
+    sel.appendChild(opt);
+
+    // Province card
+    const card = document.createElement('div');
+    const putusColor = p.putus >= 0.1 ? '#ef4444' : p.putus >= 0.05 ? '#f59e0b' : '#10b981';
+    card.className = 'section-card';
+    card.style.cursor = 'pointer';
+    card.style.padding = '14px';
+    card.style.transition = 'transform 0.15s, box-shadow 0.15s';
+    card.onmouseenter = () => { card.style.transform='translateY(-3px)'; card.style.boxShadow='0 8px 24px rgba(0,0,0,0.1)'; };
+    card.onmouseleave = () => { card.style.transform=''; card.style.boxShadow=''; };
+    card.onclick = () => { sel.value = p.id; loadProvinsiDetail(p.id); };
+    card.innerHTML = `
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${p.pulau}</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px;line-height:1.3;">${p.nama}</div>
+      <div style="font-size:11px;color:${putusColor};font-weight:600;">Putus: ${p.putus.toFixed(3)}%</div>
+      <div style="font-size:11px;color:var(--text-muted);">Murid: ${p.murid.toFixed(2)} Jt</div>
+      <div style="height:4px;background:#f1f5f9;border-radius:2px;margin-top:8px;">
+        <div style="height:4px;background:${putusColor};border-radius:2px;width:${Math.min(100,(p.putus/0.289)*100)}%;"></div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function filterProvinsi(query) {
+  const q = query.toLowerCase();
+  const cards = document.getElementById('provinsiGrid').children;
+  const prov = DATA_PROVINSI;
+  Array.from(cards).forEach((card, i) => {
+    card.style.display = prov[i].nama.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+let provDonutChart, provRadarChart;
+
+function loadProvinsiDetail(id) {
+  if (!id) return;
+  const p = DATA_PROVINSI.find(x=>x.id===id);
+  if (!p) return;
+
+  document.getElementById('provinsiGrid').style.display = 'none';
+  const detail = document.getElementById('provinsiFullDetail');
+  detail.style.display = 'block';
+
+  document.getElementById('provHeroName').textContent = p.nama;
+  document.getElementById('provHeroPulau').textContent = `📍 ${p.pulau}`;
+
+  // KPI cards
+  const kpis = [
+    { icon:'👥', label:'Total Murid', value: p.murid.toFixed(2)+' Jt', bg:'bg-blue-soft', color:'text-blue' },
+    { icon:'👩‍🏫', label:'Total Guru', value: p.guru.toFixed(1)+' Ribu', bg:'bg-green-soft', color:'text-green' },
+    { icon:'🏫', label:'Total Sekolah', value: p.sekolah.toFixed(2)+' Ribu', bg:'bg-orange-soft', color:'text-orange' },
+    { icon:'⚠️', label:'Angka Putus Sekolah', value: p.putus.toFixed(3)+'%', bg:'bg-red-soft', color:'text-red' },
+    { icon:'📏', label:'Rasio Murid/Guru', value: p.rasio.toFixed(1), bg:'bg-purple-soft', color:'text-purple' },
+    { icon:'🏆', label:'Akreditasi A', value: p.akr_a.toFixed(1)+'%', bg:'bg-pink-soft', color:'text-pink' },
+    { icon:'📚', label:'Murid SD', value: p.sd.toFixed(2)+' Jt', bg:'bg-blue-soft', color:'text-blue' },
+    { icon:'📖', label:'Murid SMP', value: p.smp.toFixed(2)+' Jt', bg:'bg-green-soft', color:'text-green' },
+  ];
+
+  document.getElementById('provKpiGrid').innerHTML = kpis.map(k=>`
+    <div class="kpi-card" style="padding:14px;">
+      <div class="kpi-icon ${k.bg}" style="font-size:16px;width:36px;height:36px;">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="font-size:18px;">${k.value}</div>
+    </div>`).join('');
+
+  // Donut
+  if (provDonutChart) provDonutChart.destroy();
+  provDonutChart = new Chart(document.getElementById('provDonut'), {
+    type: 'doughnut',
+    data: {
+      labels: ['SD','SMP','SMA'],
+      datasets: [{ data: [p.sd, p.smp, p.sma], backgroundColor:['#3b82f6','#ec4899','#f59e0b'], borderWidth:3, borderColor:'#fff', hoverOffset:6 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'60%', plugins:{ legend:{ position:'bottom', labels:{ font:{size:11} } } }, animation:{duration:800} }
+  });
+
+  // Radar vs Nasional
+  const nasRasio = 14.73, nasAkr = 52.4, nasPutus = 0.123;
+  if (provRadarChart) provRadarChart.destroy();
+  provRadarChart = new Chart(document.getElementById('provRadar'), {
+    type: 'radar',
+    data: {
+      labels: ['Akreditasi A (%)', 'Rasio Efisien\n(inv)', 'Putus Rendah\n(inv)', 'Murid per\nSekolah (inv)'],
+      datasets: [
+        {
+          label: p.nama,
+          data: [
+            (p.akr_a/82)*100,
+            Math.max(0, 100-(p.rasio/20)*100),
+            Math.max(0, 100-(p.putus/0.3)*100),
+            60
+          ],
+          borderColor:'#e11d78', backgroundColor:'rgba(225,29,120,0.15)', pointRadius:4, borderWidth:2
+        },
+        {
+          label: 'Rata-rata Nasional',
+          data: [
+            (nasAkr/82)*100,
+            Math.max(0,100-(nasRasio/20)*100),
+            Math.max(0,100-(nasPutus/0.3)*100),
+            60
+          ],
+          borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.1)', pointRadius:4, borderWidth:2, borderDash:[5,5]
+        }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, scales:{ r:{ min:0, max:100, ticks:{font:{size:9}}, pointLabels:{font:{size:10}} } }, plugins:{ legend:{labels:{font:{size:10}}} }, animation:{duration:800} }
+  });
+
+  // Data table
+  const rows = [
+    ['Total Murid', p.murid.toFixed(2)+' Juta'],
+    ['Total Guru', p.guru.toFixed(1)+' Ribu'],
+    ['Total Sekolah', p.sekolah.toFixed(2)+' Ribu'],
+    ['Angka Putus Sekolah', p.putus.toFixed(3)+'%'],
+    ['Rasio Murid/Guru', p.rasio.toFixed(1)],
+    ['Akreditasi A', p.akr_a.toFixed(1)+'%'],
+    ['Murid SD', p.sd.toFixed(2)+' Juta'],
+    ['Murid SMP', p.smp.toFixed(2)+' Juta'],
+    ['Murid SMA', p.sma.toFixed(2)+' Juta'],
+    ['Pulau', p.pulau],
+  ];
+
+  document.getElementById('provDataTable').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th style="text-align:left;padding:8px 12px;background:#f8fafc;font-size:11px;color:var(--text-muted);border-bottom:2px solid #f1f5f9;">Indikator</th>
+        <th style="text-align:left;padding:8px 12px;background:#f8fafc;font-size:11px;color:var(--text-muted);border-bottom:2px solid #f1f5f9;">${p.nama}</th>
+        <th style="text-align:left;padding:8px 12px;background:#f8fafc;font-size:11px;color:var(--text-muted);border-bottom:2px solid #f1f5f9;">Nasional</th>
+
+      </tr></thead>
+      <tbody>${rows.map(([label, val], i)=>{
+        const natVals = [37.93+' Juta', 2580+' Ribu', 208.95+' Ribu', '0.123%', '14.73', '52.4%', '', '', '', ''];
+        return `<tr style="border-bottom:1px solid #f8fafc;">
+          <td style="padding:8px 12px;font-size:12px;font-weight:600;">${label}</td>
+          <td style="padding:8px 12px;font-size:12px;font-weight:700;color:var(--primary);">${val}</td>
+          <td style="padding:8px 12px;font-size:12px;color:var(--text-muted);">${natVals[i]||'—'}</td>
+          <td style="padding:8px 12px;font-size:11px;"></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+// Back to grid
+function backToGrid() {
+  document.getElementById('provinsiGrid').style.display = 'grid';
+  document.getElementById('provinsiFullDetail').style.display = 'none';
+  document.getElementById('selectProvinsi').value = '';
+}
+
+// ============================================================
+//  PAGE 3: PERBANDINGAN
+// ============================================================
+let cmpRadarChart, cmpBarChart;
+
+function initComparePage() {
+  ['cmpA','cmpB'].forEach(id=>{
+    const sel = document.getElementById(id);
+    DATA_PROVINSI.forEach(p=>{
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = p.nama;
+      sel.appendChild(opt);
+    });
+  });
+  // Default selections
+  document.getElementById('cmpA').value = 'DKI';
+  document.getElementById('cmpB').value = 'PAP_SEL';
+  updateComparison();
+}
+
+function updateComparison() {
+  const idA = document.getElementById('cmpA').value;
+  const idB = document.getElementById('cmpB').value;
+  if (!idA || !idB) return;
+  if (idA === idB) { alert('Pilih provinsi yang berbeda!'); return; }
+
+  const a = DATA_PROVINSI.find(x=>x.id===idA);
+  const b = DATA_PROVINSI.find(x=>x.id===idB);
+
+  document.getElementById('cmpPlaceholder').style.display='none';
+  document.getElementById('cmpResult').style.display='block';
+
+  document.getElementById('cmpNameA').textContent = a.nama;
+  document.getElementById('cmpPulauA').textContent = a.pulau;
+  document.getElementById('cmpNameB').textContent = b.nama;
+  document.getElementById('cmpPulauB').textContent = b.pulau;
+
+  // KPI comparison
+  const metrics = [
+    { label:'Total Murid', keyA: a.murid.toFixed(2)+' Jt', keyB: b.murid.toFixed(2)+' Jt', better: a.murid > b.murid ? 'A':'B', icon:'👥' },
+    { label:'Total Guru', keyA: a.guru.toFixed(1)+' Rb', keyB: b.guru.toFixed(1)+' Rb', better: a.guru > b.guru ? 'A':'B', icon:'👩‍🏫' },
+    { label:'Total Sekolah', keyA: a.sekolah.toFixed(2)+' Rb', keyB: b.sekolah.toFixed(2)+' Rb', better: a.sekolah > b.sekolah ? 'A':'B', icon:'🏫' },
+    { label:'Putus Sekolah', keyA: a.putus.toFixed(3)+'%', keyB: b.putus.toFixed(3)+'%', better: a.putus < b.putus ? 'A':'B', icon:'⚠️' },
+    { label:'Rasio Murid/Guru', keyA: a.rasio.toFixed(1), keyB: b.rasio.toFixed(1), better: a.rasio < b.rasio ? 'A':'B', icon:'📏' },
+    { label:'Akreditasi A', keyA: a.akr_a.toFixed(1)+'%', keyB: b.akr_a.toFixed(1)+'%', better: a.akr_a > b.akr_a ? 'A':'B', icon:'🏆' },
+  ];
+
+  document.getElementById('cmpKpiGrid').innerHTML = metrics.map(m=>`
+    <div class="section-card" style="padding:14px;">
+      <div style="font-size:18px;margin-bottom:8px;">${m.icon}</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-weight:600;">${m.label}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="text-align:center;flex:1;">
+          <div style="font-size:16px;font-weight:800;color:${m.better==='A'?'#10b981':'var(--text-main)'};">${m.keyA}</div>
+          <div style="font-size:10px;color:var(--text-muted);">${a.nama.split(' ')[0]}</div>
+        </div>
+        <div style="font-size:18px;">⚡</div>
+        <div style="text-align:center;flex:1;">
+          <div style="font-size:16px;font-weight:800;color:${m.better==='B'?'#10b981':'var(--text-main)'};">${m.keyB}</div>
+          <div style="font-size:10px;color:var(--text-muted);">${b.nama.split(' ')[0]}</div>
+        </div>
+      </div>
+    </div>`).join('');
+
+  // Radar chart
+  if (cmpRadarChart) cmpRadarChart.destroy();
+  cmpRadarChart = new Chart(document.getElementById('cmpRadar'), {
+    type: 'radar',
+    data: {
+      labels: ['Akreditasi A', 'Efisiensi Guru', 'Retensi Siswa', 'Skala Murid', 'Jumlah Sekolah'],
+      datasets: [
+        {
+          label: a.nama,
+          data: [a.akr_a/82*100, (1-a.rasio/20)*100+50, (1-a.putus/0.3)*100, a.murid/6.812*100, a.sekolah/31.41*100],
+          borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.15)', borderWidth:2, pointRadius:4
+        },
+        {
+          label: b.nama,
+          data: [b.akr_a/82*100, (1-b.rasio/20)*100+50, (1-b.putus/0.3)*100, b.murid/6.812*100, b.sekolah/31.41*100],
+          borderColor:'#ec4899', backgroundColor:'rgba(236,72,153,0.15)', borderWidth:2, pointRadius:4
+        }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, scales:{ r:{ min:0, max:100, ticks:{font:{size:9}}, pointLabels:{font:{size:10}} } }, plugins:{legend:{labels:{font:{size:10}}}}, animation:{duration:800} }
+  });
+
+  // Bar chart comparison
+  if (cmpBarChart) cmpBarChart.destroy();
+  cmpBarChart = new Chart(document.getElementById('cmpBar'), {
+    type: 'bar',
+    data: {
+      labels: ['Murid (Jt)', 'Guru (Rb/10)', 'Sekolah (Rb)', 'Putus×100', 'Rasio', 'Akr.A (%)'],
+      datasets: [
+        { label: a.nama, data: [a.murid, a.guru/10, a.sekolah, a.putus*100, a.rasio, a.akr_a/10], backgroundColor:'#6366f1', borderRadius:6 },
+        { label: b.nama, data: [b.murid, b.guru/10, b.sekolah, b.putus*100, b.rasio, b.akr_a/10], backgroundColor:'#ec4899', borderRadius:6 }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{labels:{font:{size:11}}} }, scales:{ y:{beginAtZero:true, ticks:{font:{size:10}}}, x:{ticks:{font:{size:10}}} }, animation:{duration:900} }
+  });
+
+  // Comparison table
+  const tableRows = [
+    ['Total Murid', a.murid.toFixed(2)+' Juta', b.murid.toFixed(2)+' Juta', 'murid', false],
+    ['Total Guru', a.guru.toFixed(1)+' Ribu', b.guru.toFixed(1)+' Ribu', 'guru', false],
+    ['Total Sekolah', a.sekolah.toFixed(2)+' Ribu', b.sekolah.toFixed(2)+' Ribu', 'sekolah', false],
+    ['Angka Putus Sekolah', a.putus.toFixed(3)+'%', b.putus.toFixed(3)+'%', 'putus', true],
+    ['Rasio Murid/Guru', a.rasio.toFixed(1), b.rasio.toFixed(1), 'rasio', true],
+    ['Akreditasi A (%)', a.akr_a.toFixed(1)+'%', b.akr_a.toFixed(1)+'%', 'akr_a', false],
+    ['Murid SD (Juta)', a.sd.toFixed(2), b.sd.toFixed(2), 'sd', false],
+    ['Murid SMP (Juta)', a.smp.toFixed(2), b.smp.toFixed(2), 'smp', false],
+    ['Murid SMA (Juta)', a.sma.toFixed(2), b.sma.toFixed(2), 'sma', false],
+    ['Pulau', a.pulau, b.pulau, null, null],
+  ];
+
+  document.getElementById('cmpTable').innerHTML = `
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th style="text-align:left;padding:10px 12px;background:#f8fafc;font-size:11px;color:var(--text-muted);border-bottom:2px solid #f1f5f9;">Indikator</th>
+        <th style="text-align:center;padding:10px 12px;background:rgba(99,102,241,0.07);font-size:11px;color:#6366f1;border-bottom:2px solid #f1f5f9;">${a.nama}</th>
+        <th style="text-align:center;padding:10px 12px;background:rgba(236,72,153,0.07);font-size:11px;color:#ec4899;border-bottom:2px solid #f1f5f9;">${b.nama}</th>
+        <th style="text-align:center;padding:10px 12px;background:#f8fafc;font-size:11px;color:var(--text-muted);border-bottom:2px solid #f1f5f9;">Lebih Baik</th>
+      </tr></thead>
+      <tbody>${tableRows.map(([label, valA, valB, key, lowerBetter])=>{
+        let winner = '—';
+        if (key && a[key] !== undefined) {
+          const aNum = a[key], bNum = b[key];
+          if (lowerBetter) winner = aNum < bNum ? `<span style="color:#10b981;font-weight:700;">✅ ${a.nama.split(' ')[0]}</span>` : `<span style="color:#10b981;font-weight:700;">✅ ${b.nama.split(' ')[0]}</span>`;
+          else winner = aNum > bNum ? `<span style="color:#10b981;font-weight:700;">✅ ${a.nama.split(' ')[0]}</span>` : `<span style="color:#10b981;font-weight:700;">✅ ${b.nama.split(' ')[0]}</span>`;
+        }
+        return `<tr style="border-bottom:1px solid #f8fafc;">
+          <td style="padding:9px 12px;font-size:12px;font-weight:600;">${label}</td>
+          <td style="padding:9px 12px;font-size:12px;font-weight:700;color:#6366f1;text-align:center;">${valA}</td>
+          <td style="padding:9px 12px;font-size:12px;font-weight:700;color:#ec4899;text-align:center;">${valB}</td>
+          <td style="padding:9px 12px;font-size:11px;text-align:center;">${winner}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+}
+
+// ============================================================
+//  INIT ALL
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  initOverview();
+  initProvinsiPage();
+  initComparePage();
+});
+</script>
+</body>
+</html>
